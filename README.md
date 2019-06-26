@@ -4,7 +4,8 @@ This is a Pytorch implementation of [Group Latent Embedding for Vector Quantized
 
 ## Dataset:
 
-* [VCTK](https://datashare.is.ed.ac.uk/handle/10283/2651): [Audio samples](https://shaojinding.github.io/samples/gle/gle_demo).
+* [VCTK](https://datashare.is.ed.ac.uk/handle/10283/2651)
+* * [Audio samples](https://shaojinding.github.io/samples/gle/gle_demo).
 
 ## Preparation
 
