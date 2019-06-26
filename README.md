@@ -1,7 +1,6 @@
-# WaveRNN + VQ-VAE
+# Group Latent Embedding for Vector Quantized Variational Autoencoder in Non-Parallel Voice Conversion
 
-This is a Pytorch implementation of [WaveRNN](
-https://arxiv.org/abs/1802.08435v1). Currently 3 top-level networks are
+This is a Pytorch implementation of [Group Latent Embedding for Vector Quantized Variational Autoencoder in Non-Parallel Voice Conversion](https://arxiv.org/abs/1802.08435v1). Currently 3 top-level networks are
 provided:
 
 * A [VQ-VAE](https://avdnoord.github.io/homepage/vqvae/) implementation with a
