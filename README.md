@@ -2,13 +2,9 @@
 
 This is a Pytorch implementation of [Group Latent Embedding for Vector Quantized Variational Autoencoder in Non-Parallel Voice Conversion](https://psi.engr.tamu.edu/wp-content/uploads/2019/06/ding2019interspeech.pdf). This implementation is based on the VQ-VAE-WaveRNN implementation at [https://github.com/mkotha/WaveRNN](https://github.com/mkotha/WaveRNN).
 
-[Audio samples](https://shaojinding.github.io/samples/gle/gle_demo).
-
-It has been tested with the following datasets.
-
 ## Dataset:
 
-* [VCTK](https://datashare.is.ed.ac.uk/handle/10283/2651)
+* [VCTK](https://datashare.is.ed.ac.uk/handle/10283/2651): [Audio samples](https://shaojinding.github.io/samples/gle/gle_demo).
 
 ## Preparation
 
