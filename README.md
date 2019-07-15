@@ -1,18 +1,24 @@
-# Group Latent Embedding for Vector Quantized Variational Autoencoder in Non-Parallel Voice Conversion (Accepted by Interspeech 2019)
+# GLE-VQ-VAE VC
+This repository is a Pytorch implementation of [Group Latent Embedding for Vector Quantized Variational Autoencoder in Non-Parallel Voice Conversion][originPaper] and fork of [official repo][].  
+This implementation is based on the VQ-VAE-WaveRNN implementation at [https://github.com/mkotha/WaveRNN](https://github.com/mkotha/WaveRNN).  
 
-This is a Pytorch implementation of [Group Latent Embedding for Vector Quantized Variational Autoencoder in Non-Parallel Voice Conversion](https://psi.engr.tamu.edu/wp-content/uploads/2019/06/ding2019interspeech.pdf). This implementation is based on the VQ-VAE-WaveRNN implementation at [https://github.com/mkotha/WaveRNN](https://github.com/mkotha/WaveRNN).
+The purpose of this fork is out-of-box reproduction of original results.  
+Currently, original repo has missing internal dependencies [#1][i1]  [#2][i2] (needs fixes), but repo do not enable GitHub issues.  
+If you can contact with authors and notify the bugs, I am happy.  
+
+[originPaper]: https://psi.engr.tamu.edu/wp-content/uploads/2019/06/ding2019interspeech.pdf
+[official repo]: https://github.com/shaojinding/GroupLatentEmbedding
+[i1]: https://github.com/tarepan/GroupLatentEmbedding/issues/1
+[i2]: https://github.com/tarepan/GroupLatentEmbedding/issues/2
 
 ## Dataset:
 
 * [VCTK](https://datashare.is.ed.ac.uk/handle/10283/2651)
-  * [Audio samples](https://shaojinding.github.io/samples/gle/gle_demo).
+  <!-- * [Audio samples](https://shaojinding.github.io/samples/gle/gle_demo). -->
 
 ## Preparation
-
-The preparation is similar to that at [https://github.com/mkotha/WaveRNN](https://github.com/mkotha/WaveRNN). We repeat it here for convenience.
-
-
 ### Requirements
+(move into pipenv rock file)
 
 * Python 3.6 or newer
 * PyTorch with CUDA enabled
@@ -47,7 +53,7 @@ To run Group Latent Embedding:
 $ python wavernn.py -m vqvae_group --num-group 41 --num-sample 10
 ```
 
-The `-m` option can be used to tell the the script what model to train. By default, it trains a vanilla VQ-VAE model. 
+The `-m` option can be used to tell the the script what model to train. By default, it trains a vanilla VQ-VAE model.
 
 Trained models are saved under the `model_checkpoints` directory.
 
