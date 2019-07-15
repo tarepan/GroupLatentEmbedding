@@ -15,7 +15,6 @@ from layers.downsampling_encoder import DownsamplingEncoder
 import utils.env as env
 import utils.logger as logger
 import random
-from layers.singular_loss import SingularLoss
 
 __model_factory = {
     'vqvae': VectorQuant,
