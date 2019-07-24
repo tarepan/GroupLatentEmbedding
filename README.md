@@ -55,6 +55,13 @@ $ python wavernn.py -m vqvae_group --num-group 41 --num-sample 10
 
 The `-m` option can be used to tell the the script what model to train. By default, it trains a vanilla VQ-VAE model.
 
+below is model list.  
+
+- VQ-VAE (vqvae) (multi-speaker)
+- GLE-VQ-VAE (vqvqe_group) (multi-speaker)
+- WaveRNN (wavernn) (single-speaker)
+- ?? (nc) (single-speaker)
+
 Trained models are saved under the `model_checkpoints` directory.
 
 By default, the script will take the latest snapshot and continues training
