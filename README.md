@@ -53,7 +53,14 @@ To run Group Latent Embedding:
 $ python wavernn.py -m vqvae_group --num-group 41 --num-sample 10
 ```
 
-The `-m` option can be used to tell the the script what model to train. By default, it trains a vanilla VQ-VAE model.
+The `-m` option specify a model to train (default: GLE-VQ-VAE model, proposed in the paper.)
+
+Below is model list (model_type: description).  
+
+- vqvae_group: GLE-VQ-VAE with multi-speaker
+- vqvae: VQ-VAE with multi-speaker
+- wavernn: WaveRNN with single-speaker
+- nc: ?? with single-speaker
 
 Trained models are saved under the `model_checkpoints` directory.
 

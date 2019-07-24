@@ -28,7 +28,7 @@ parser.add_argument('--float', action='store_true')
 parser.add_argument('--half', action='store_true')
 parser.add_argument('--load', '-l')
 parser.add_argument('--scratch', action='store_true')
-parser.add_argument('--model', '-m')
+parser.add_argument('--model', '-m', default='vqvae_group')
 parser.add_argument('--force', action='store_true', help='skip the version check')
 parser.add_argument('--count', '-c', type=int, default=3, help='size of the test set')
 parser.add_argument('--partial', action='append', default=[], help='model to partially load')
@@ -52,21 +52,26 @@ elif args.half:
 else:
     use_half = False
 
-model_type = args.model or 'vqvae'
+model_type = args.model
 
 model_name = f'{model_type}.43.upconv'
 
+# multi-speaker VQ-VAE (vqvae) | GLE-VQ-VAE (vqvae-group)
+# Dynamic model variant assignment in vqvae.Model's __init__ by model_type string
 if model_type[:5] == 'vqvae':
     model_fn = lambda dataset: vqvae.Model(model_type=model_type, rnn_dims=896, fc_dims=896, global_decoder_cond_dims=dataset.num_speakers(),
                   upsample_factors=(4, 4, 4), num_group=args.num_group, num_sample=args.num_sample, normalize_vq=True, noise_x=True, noise_y=True).cuda()
     dataset_type = 'multi'
+# single-speaker WaveRNN
 elif model_type == 'wavernn':
     model_fn = lambda dataset: wr.Model(rnn_dims=896, fc_dims=896, pad=2,
                   upsample_factors=(4, 4, 4), feat_dims=80).cuda()
     dataset_type = 'single'
+# nc?
 elif model_type == 'nc':
     model_fn = lambda dataset: nc.Model(rnn_dims=896, fc_dims=896).cuda()
     dataset_type = 'single'
+# Unknown model error
 else:
     sys.exit(f'Unknown model: {model_type}')
 
