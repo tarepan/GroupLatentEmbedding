@@ -23,6 +23,8 @@ from tensorboardX import SummaryWriter
 import config
 
 parser = argparse.ArgumentParser(description='Train or run some neural net')
+parser.add_argument('--exp-name', type=str, required=True)
+parser.add_argument('--results-dir', type=str, default="results")
 parser.add_argument('--generate', '-g', action='store_true')
 parser.add_argument('--float', action='store_true')
 parser.add_argument('--half', action='store_true')
@@ -99,7 +101,7 @@ for partial_path in args.partial:
 
 optimiser = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
-paths = env.Paths(model_name, data_path)
+paths = env.Paths(model_name, data_path, args.results_dir, args.exp_name)
 
 if args.scratch or args.load == None and not os.path.exists(paths.model_path()):
     # Start from scratch
@@ -113,7 +115,7 @@ else:
         if prev_model_basename != model_basename and not args.force:
             sys.exit(f'refusing to load {args.load} because its basename ({prev_model_basename}) is not {model_basename}')
         if args.generate:
-            paths = env.Paths(prev_model_name, data_path)
+            paths = env.Paths(prev_model_name, data_path, args.results_dir, args.exp_name)
         prev_path = args.load
     else:
         prev_path = paths.model_path()
@@ -134,7 +136,7 @@ else:
     logger.log('num_group={}'.format(args.num_group))
     logger.log('count={}'.format(args.count))
     logger.log('num_sample={}'.format(args.num_sample))
-    writer = SummaryWriter(paths.logfile_path() + '_tensorboard')
+    writer = SummaryWriter(f"{paths.logfile_path()}/tensorboard")
     writer.add_scalars('Params/Train', {'beta': args.beta})
     writer.add_scalars('Params/Train', {'num_group': args.num_group})
     writer.add_scalars('Params/Train', {'num_sample': args.num_sample})
