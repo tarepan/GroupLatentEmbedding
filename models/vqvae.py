@@ -10,6 +10,7 @@ from layers.vector_quant import *
 from layers.downsampling_encoder import DownsamplingEncoder
 import utils.env as env
 import random
+from fastprogress import master_bar, progress_bar
 
 __model_factory = {
     'vqvae': VectorQuant,
@@ -139,8 +140,8 @@ class Model(nn.Module) :
         pad_right = self.pad_right() + extra_pad_right
         window = 16 * self.total_scale()
 
-        for e in range(epoch, epochs) :
-
+        epochs = master_bar(range(epoch, epochs))
+        for e in epochs:
             trn_loader = DataLoader(dataset, collate_fn=lambda batch: env.collate_multispeaker_samples(pad_left, window, pad_right, batch), batch_size=batch_size,
                                     num_workers=2, shuffle=True, pin_memory=True)
 
@@ -155,7 +156,7 @@ class Model(nn.Module) :
 
             iters = len(trn_loader)
 
-            for i, (speaker, wave16) in enumerate(trn_loader):
+            for i, (speaker, wave16) in progress_bar(enumerate(trn_loader), parent=epochs):
 
                 speaker = speaker.cuda()
                 wave16 = wave16.cuda()
