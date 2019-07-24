@@ -9,6 +9,16 @@ bits = 16
 seq_len = hop_length * 5
 
 class Paths:
+    """Abstract Path class.
+    params:
+        (latest): f"{model_checkpoints or "model_checkpoints"}"/f"{self.name}.pyt"
+        (checkpoints): f"{model_checkpoints or "model_checkpoints"}"/f"{self.name}_{step}.pyt"
+    samples:
+        f'{output_dir or "model_outputs"}/{self.name}/'
+    logs:
+        (txt): f'log/{self.name}/xxx_tensorboard/...
+        (tfevent): f'log/{self.name}/xxx_tensorboard/...tfevent...'
+    """
     def __init__(self, name, data_dir, checkpoint_dir="model_checkpoints", output_dir="model_outputs"):
         self.name = name
         self.data_dir = data_dir
@@ -21,6 +31,8 @@ class Paths:
     def model_hist_path(self, step):
         return f'{self.checkpoint_dir}/{self.name}_{step}.pyt'
 
+    # @deprecated
+    # Used in wavernn & nc, but not used in vqvae
     def step_path(self):
         return f'{self.checkpoint_dir}/{self.name}_step.npy'
 
