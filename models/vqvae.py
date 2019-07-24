@@ -156,7 +156,7 @@ class Model(nn.Module) :
 
             iters = len(trn_loader)
 
-            for i, (speaker, wave16) in progress_bar(enumerate(trn_loader), parent=epochs):
+            for i, (speaker, wave16) in enumerate(progress_bar(trn_loader, parent=epochs)):
 
                 speaker = speaker.cuda()
                 wave16 = wave16.cuda()
