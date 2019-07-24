@@ -28,7 +28,7 @@ parser.add_argument('--float', action='store_true')
 parser.add_argument('--half', action='store_true')
 parser.add_argument('--load', '-l')
 parser.add_argument('--scratch', action='store_true')
-parser.add_argument('--model', '-m')
+parser.add_argument('--model', '-m', default='vqvae')
 parser.add_argument('--force', action='store_true', help='skip the version check')
 parser.add_argument('--count', '-c', type=int, default=3, help='size of the test set')
 parser.add_argument('--partial', action='append', default=[], help='model to partially load')
@@ -52,7 +52,7 @@ elif args.half:
 else:
     use_half = False
 
-model_type = args.model or 'vqvae'
+model_type = args.model
 
 model_name = f'{model_type}.43.upconv'
 
