@@ -9,11 +9,22 @@ bits = 16
 seq_len = hop_length * 5
 
 class Paths:
-    def __init__(self, name, data_dir, checkpoint_dir="model_checkpoints", output_dir="model_outputs"):
+    """Abstract Path class.
+    params:
+        (latest): f"{model_checkpoints or "model_checkpoints"}"/f"{self.name}.pyt"
+        (checkpoints): f"{model_checkpoints or "model_checkpoints"}"/f"{self.name}_{step}.pyt"
+    samples:
+        f'{output_dir or "model_outputs"}/{self.name}/'
+    logs:
+        (txt): f'log/{self.name}/xxx_tensorboard/...
+        (tfevent): f'log/{self.name}/xxx_tensorboard/...tfevent...'
+    """
+    def __init__(self, name, data_dir, results_dir_path: str, exp_name: str, checkpoint_dir="model_checkpoints", output_dir="model_outputs"):
         self.name = name
         self.data_dir = data_dir
-        self.checkpoint_dir = checkpoint_dir
-        self.output_dir = output_dir
+        self.checkpoint_dir = f"{results_dir_path}/{exp_name}/params"
+        self.log_dir = f"{results_dir_path}/{exp_name}/logs"
+        self.output_dir = f"{results_dir_path}/{exp_name}/samples"
 
     def model_path(self):
         return f'{self.checkpoint_dir}/{self.name}.pyt'
@@ -21,17 +32,16 @@ class Paths:
     def model_hist_path(self, step):
         return f'{self.checkpoint_dir}/{self.name}_{step}.pyt'
 
+    # @deprecated
+    # Used in wavernn & nc, but not used in vqvae
     def step_path(self):
         return f'{self.checkpoint_dir}/{self.name}_step.npy'
 
-    def gen_path(self):
-        return f'{self.output_dir}/{self.name}/'
+    def gen_dir(self):
+        return self.output_dir
 
-    def logfile_path(self):
-        return f'log/{self.name}'
-
-def default_paths(name, data_dir):
-    return Paths(name, data_dir, checkpoint_dir="model_checkpoints", output_dir="model_outputs")
+    def logfile_dir(self):
+        return self.log_dir
 
 class AudiobookDataset(Dataset):
     def __init__(self, ids, path):

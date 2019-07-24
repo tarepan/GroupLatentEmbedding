@@ -13,7 +13,6 @@ from layers.overtone import Overtone
 from layers.vector_quant import *
 from layers.downsampling_encoder import DownsamplingEncoder
 import utils.env as env
-import utils.logger as logger
 import random
 
 __model_factory = {
@@ -54,18 +53,13 @@ class Model(nn.Module) :
 
     def forward(self, global_decoder_cond, x, samples):
         # x: (N, 768, 3)
-        #logger.log(f'x: {x.size()}')
         # samples: (N, 1022)
-        #logger.log(f'samples: {samples.size()}')
         continuous = self.encoder(samples)
         # continuous: (N, 14, 64)
-        #logger.log(f'continuous: {continuous.size()}')
         discrete, vq_pen, encoder_pen, entropy = self.vq(continuous.unsqueeze(2))
         # discrete: (N, 14, 1, 64)
-        #logger.log(f'discrete: {discrete.size()}')
 
         # cond: (N, 768, 64)
-        #logger.log(f'cond: {cond.size()}')
         return self.overtone(x, discrete.squeeze(2), global_decoder_cond), vq_pen.mean(), encoder_pen.mean(), entropy
 
     def after_update(self):
@@ -76,14 +70,11 @@ class Model(nn.Module) :
         if use_half:
             samples = samples.half()
         # samples: (L)
-        #logger.log(f'samples: {samples.size()}')
         self.eval()
         with torch.no_grad() :
             continuous = self.encoder(samples)
             discrete, vq_pen, encoder_pen, entropy = self.vq(continuous.unsqueeze(2))
-            logger.log(f'entropy: {entropy}')
             # cond: (1, L1, 64)
-            #logger.log(f'cond: {cond.size()}')
             output = self.overtone.generate(discrete.squeeze(2), global_decoder_cond, use_half=use_half, verbose=verbose)
         self.train()
         return output
@@ -91,7 +82,6 @@ class Model(nn.Module) :
     def num_params(self) :
         parameters = filter(lambda p: p.requires_grad, self.parameters())
         parameters = sum([np.prod(p.size()) for p in parameters]) / 1_000_000
-        logger.log('Trainable Parameters: %.3f million' % parameters)
 
     def load_state_dict(self, dict, strict=True):
         if strict:
@@ -101,11 +91,10 @@ class Model(nn.Module) :
             new_dict = {}
             for key, val in dict.items():
                 if key not in my_dict:
-                    logger.log(f'Ignoring {key} because no such parameter exists')
+                    pass
                 elif val.size() != my_dict[key].size():
-                    logger.log(f'Ignoring {key} because of size mismatch')
+                    pass
                 else:
-                    logger.log(f'Loading {key}')
                     new_dict[key] = val
             return super().load_state_dict(new_dict, strict=False)
 
@@ -116,10 +105,9 @@ class Model(nn.Module) :
     def freeze_encoder(self):
         for name, param in self.named_parameters():
             if name.startswith('encoder.') or name.startswith('vq.'):
-                logger.log(f'Freezing {name}')
                 param.requires_grad = False
             else:
-                logger.log(f'Not freezing {name}')
+                pass
 
     def pad_left(self):
         return max(self.pad_left_decoder(), self.pad_left_encoder())
@@ -154,7 +142,6 @@ class Model(nn.Module) :
             extra_pad_right = 0
         pad_right = self.pad_right() + extra_pad_right
         window = 16 * self.total_scale()
-        logger.log(f'pad_left={pad_left_encoder}|{pad_left_decoder}, pad_right={pad_right}, total_scale={self.total_scale()}')
 
         for e in range(epoch, epochs) :
 
@@ -236,8 +223,6 @@ class Model(nn.Module) :
                                 if param_max_grad > max_grad:
                                     max_grad = param_max_grad
                                     max_grad_name = name
-                                if 1000000 < param_max_grad:
-                                    logger.log(f'Very large gradient at {name}: {param_max_grad}')
                         if 100 < max_grad:
                             for param in self.parameters():
                                 if param.grad is not None:
@@ -270,7 +255,6 @@ class Model(nn.Module) :
 
                 step += 1
                 k = step // 1000
-                logger.status(f'[Training] Epoch: {e+1}/{epochs} -- Batch: {i+1}/{iters} -- Loss: c={avg_loss_c:#.4} f={avg_loss_f:#.4} vq={avg_loss_vq:#.4} vqc={avg_loss_vqc:#.4} -- Entropy: {avg_entropy:#.4} -- Grad: {running_max_grad:#.1} {running_max_grad_name} Speed: {speed:#.4} steps/sec -- Step: {k}k ')
 
                 # tensorboard writer
                 writer.add_scalars('Train/loss_group', {'loss_c': loss_c.item(),
@@ -287,8 +271,6 @@ class Model(nn.Module) :
                        paths.model_path())
             # torch.save(self.state_dict(), paths.model_path())
             # np.save(paths.step_path(), step)
-            logger.log_current_status()
-            # logger.log(f' <saved>; w[0][0] = {self.overtone.wavernn.gru.weight_ih_l0[0][0]}')
 
             if e % test_epochs == 0:
                 torch.save({'epoch': e,
@@ -374,8 +356,6 @@ class Model(nn.Module) :
         avg_entropy = running_entropy / (i + 1)
 
         k = step // 1000
-        logger.log(
-            f'[Testing] Epoch: {epoch} -- Loss: c={avg_loss_c:#.4} f={avg_loss_f:#.4} vq={avg_loss_vq:#.4} vqc={avg_loss_vqc:#.4} -- Entropy: {avg_entropy:#.4} -- Grad: {running_max_grad:#.1} {running_max_grad_name} -- Step: {k}k ')
 
         # tensorboard writer
         writer.add_scalars('Test/loss_group', {'loss_c': avg_loss_c,
@@ -397,16 +377,15 @@ class Model(nn.Module) :
         speakers = [torch.FloatTensor(speaker[0].float()) for speaker, x in data]
         maxlen = max([len(x) for x in extended])
         aligned = [torch.cat([torch.FloatTensor(x), torch.zeros(maxlen-len(x))]) for x in extended]
-        os.makedirs(paths.gen_path(), exist_ok=True)
+        os.makedirs(paths.gen_dir(), exist_ok=True)
         out = self.forward_generate(torch.stack(speakers + list(reversed(speakers)), dim=0).cuda(), torch.stack(aligned + aligned, dim=0).cuda(), verbose=verbose, use_half=use_half)
 
-        logger.log(f'out: {out.size()}')
         for i, x in enumerate(gt) :
-            librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_target.wav', x.cpu().numpy(), sr=sample_rate)
+            librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_target.wav', x.cpu().numpy(), sr=sample_rate)
             audio = out[i][:len(x)].cpu().numpy()
-            librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
+            librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
             audio_tr = out[n_points+i][:len(x)].cpu().numpy()
-            librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_transferred.wav', audio_tr, sr=sample_rate)
+            librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_transferred.wav', audio_tr, sr=sample_rate)
 
 
 
@@ -432,24 +411,23 @@ class Model(nn.Module) :
         # vc_speakers = [torch.FloatTensor((np.arange(30) == 4).astype(np.float)) for _ in range(20)]
         maxlen = max([len(x) for x in extended])
         aligned = [torch.cat([torch.FloatTensor(x), torch.zeros(maxlen-len(x))]) for x in extended]
-        os.makedirs(paths.gen_path(), exist_ok=True)
+        os.makedirs(paths.gen_dir(), exist_ok=True)
         # out = self.forward_generate(torch.stack(speakers + list(reversed(speakers)), dim=0).cuda(), torch.stack(aligned + aligned, dim=0).cuda(), verbose=verbose, use_half=use_half)
         out = self.forward_generate(torch.stack(vc_speakers, dim=0).cuda(),
                                     torch.stack(aligned, dim=0).cuda(), verbose=verbose, use_half=use_half)
-        logger.log(f'out: {out.size()}')
         # for i, x in enumerate(gt) :
-        #     librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_target.wav', x.cpu().numpy(), sr=sample_rate)
+        #     librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_target.wav', x.cpu().numpy(), sr=sample_rate)
         #     audio = out[i][:len(x)].cpu().numpy()
-        #     librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
+        #     librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
         #     audio_tr = out[n_points+i][:len(x)].cpu().numpy()
-        #     librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_transferred.wav', audio_tr, sr=sample_rate)
+        #     librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_transferred.wav', audio_tr, sr=sample_rate)
 
         for i, x in enumerate(gt):
-            # librosa.output.write_wav(f'{paths.gen_path()}/gsb_{i+1:04d}.wav', x.cpu().numpy(), sr=sample_rate)
-            # librosa.output.write_wav(f'{paths.gen_path()}/gt_gsb_{i+1:03d}.wav', x.cpu().numpy(), sr=sample_rate)
+            # librosa.output.write_wav(f'{paths.gen_dir()}/gsb_{i+1:04d}.wav', x.cpu().numpy(), sr=sample_rate)
+            # librosa.output.write_wav(f'{paths.gen_dir()}/gt_gsb_{i+1:03d}.wav', x.cpu().numpy(), sr=sample_rate)
             # audio = out[i][:len(x)].cpu().numpy()
-            # librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
+            # librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
             # audio_tr = out[n_points+i][:len(x)].cpu().numpy()
             audio_tr = out[i][:self.pad_left_encoder() + len(x)].cpu().numpy()
-            # librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_transferred.wav', audio_tr, sr=sample_rate)
-            librosa.output.write_wav(f'{paths.gen_path()}/gsb_{i + 1:04d}.wav', audio_tr, sr=sample_rate)
+            # librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_transferred.wav', audio_tr, sr=sample_rate)
+            librosa.output.write_wav(f'{paths.gen_dir()}/gsb_{i + 1:04d}.wav', audio_tr, sr=sample_rate)

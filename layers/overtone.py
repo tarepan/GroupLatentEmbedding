@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import math
 from layers.wavernn import WaveRNN
-import utils.logger as logger
 import utils.nn
 import time
 
@@ -148,7 +147,6 @@ class Overtone(nn.Module):
             pad_cond = None
         else:
             pad_cond = cond[:, :self.cond_pad]
-        #logger.log(f'pad_cond: {pad_cond.size()}')
         r0, h0 = self.rnn0(torch.cat(filter_none([c2.repeat(1, 85, 1), pad_cond]), dim=2), global_cond)
         r1, h1 = self.rnn1(torch.cat([c1.repeat(1, 9, 1)[:, :84], r0], dim=2), global_cond)
         r2, h2 = self.rnn2(torch.cat([c0.repeat(1, 8, 1), r1], dim=2), global_cond)
@@ -171,7 +169,6 @@ class Overtone(nn.Module):
         zero = std_tensor.new_zeros(n)
         output = []
         for t in range(seq_len):
-            #logger.log(f't = {t}')
             t0 = t % 4
             ct0 = (-t) % 4
 
@@ -179,7 +176,6 @@ class Overtone(nn.Module):
                 t1 = (t // 4) % 4
                 ct1 = ((-t) // 4) % 4
 
-                #logger.log(f'written to c0[{-ct1-1}]')
                 c0[:, -ct1-1].copy_(self.conv0(coarse, global_cond).squeeze(1))
                 coarse[:, :-4].copy_(coarse[:, 4:])
 
@@ -187,36 +183,23 @@ class Overtone(nn.Module):
                     t2 = (t // 16) % 4
                     ct2 = ((-t) // 16) % 4
 
-                    #logger.log('read c0')
-                    #logger.log(f'written to c1[{-ct2-1}]')
                     c1[:, -ct2-1].copy_(self.conv1(c0, global_cond).squeeze(1))
                     c0[:, :-4].copy_(c0[:, 4:])
 
                     if t2 == 0:
-                        #logger.log('read c1')
-                        #logger.log('written to c2')
                         c2 = self.conv2(c1, global_cond).squeeze(1)
                         c1[:, :-4].copy_(c1[:, 4:])
 
-                        #logger.log('read c2')
-                        #logger.log('written to r0')
                         if cond is None:
                             inp0 = c2
                         else:
                             inp0 = torch.cat([c2, cond[:, t // 64 + self.cond_pad]], dim=1)
                         r0, h0 = cell0(inp0, global_cond, h0)
 
-                    #logger.log(f'read r0[{t2}]')
-                    #logger.log(f'written to r1')
-                    #logger.log(f'c1: {c1.size()} r0: {r0.size()}')
                     r1, h1 = cell1(torch.cat([c1[:, -ct2-1], r0[:, t2]], dim=1), global_cond, h1)
 
-                #logger.log(f'read r1[{t1}]')
-                #logger.log(f'written to r2')
-                #logger.log(f'c0: {c0.size()} r1: {r1.size()}')
                 r2, h2 = cell2(torch.cat([c0[:, -ct1-1], r1[:, t1]], dim=1), global_cond, h2)
 
-            #logger.log(f'read r2[{t0}]')
             wcond = torch.cat(filter_none([r2[:, t0], global_cond]), dim=1)
 
             x = torch.stack([c_val, f_val, zero], dim=1)
@@ -233,12 +216,7 @@ class Overtone(nn.Module):
             sample = (c_cat * 256 + f_cat) / 32767.5 - 1.0
             coarse[:, 6+t0].copy_(c_val.unsqueeze(1))
 
-            if verbose and t % 10000 < 100:
-                logger.log(f'c={c_cat[0]} f={f_cat[0]} sample={sample[0]}')
             output.append(sample)
-            if t % 100 == 0 :
-                speed = int((t + 1) / (time.time() - start))
-                logger.status(f'{t+1}/{seq_len} -- Speed: {speed} samples/sec')
 
         return torch.stack(output, dim=1)
 
