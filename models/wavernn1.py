@@ -118,13 +118,13 @@ class Model(nn.Module) :
         aligned = [torch.cat([torch.FloatTensor(x), torch.zeros(80, maxlen-x.shape[1]+1)], dim=1) for x in test_mels]
         out = self.forward_generate(torch.stack(aligned).cuda(), deterministic, use_half=use_half, verbose=verbose)
 
-        os.makedirs(paths.gen_path(), exist_ok=True)
+        os.makedirs(paths.gen_dir(), exist_ok=True)
         for i, id in enumerate(test_index):
             gt = np.load(f'{data_path}/quant/{id}.npy')
             gt = (gt.astype(np.float32) + 0.5) / (2**15 - 0.5)
-            librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_target.wav', gt, sr=sample_rate)
+            librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_target.wav', gt, sr=sample_rate)
             audio = out[i][:len(gt)].cpu().numpy()
-            librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
+            librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
 
 def upgrade_state_dict(state_dict):
     out_dict = {}

@@ -377,15 +377,15 @@ class Model(nn.Module) :
         speakers = [torch.FloatTensor(speaker[0].float()) for speaker, x in data]
         maxlen = max([len(x) for x in extended])
         aligned = [torch.cat([torch.FloatTensor(x), torch.zeros(maxlen-len(x))]) for x in extended]
-        os.makedirs(paths.gen_path(), exist_ok=True)
+        os.makedirs(paths.gen_dir(), exist_ok=True)
         out = self.forward_generate(torch.stack(speakers + list(reversed(speakers)), dim=0).cuda(), torch.stack(aligned + aligned, dim=0).cuda(), verbose=verbose, use_half=use_half)
 
         for i, x in enumerate(gt) :
-            librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_target.wav', x.cpu().numpy(), sr=sample_rate)
+            librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_target.wav', x.cpu().numpy(), sr=sample_rate)
             audio = out[i][:len(x)].cpu().numpy()
-            librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
+            librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
             audio_tr = out[n_points+i][:len(x)].cpu().numpy()
-            librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_transferred.wav', audio_tr, sr=sample_rate)
+            librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_transferred.wav', audio_tr, sr=sample_rate)
 
 
 
@@ -411,23 +411,23 @@ class Model(nn.Module) :
         # vc_speakers = [torch.FloatTensor((np.arange(30) == 4).astype(np.float)) for _ in range(20)]
         maxlen = max([len(x) for x in extended])
         aligned = [torch.cat([torch.FloatTensor(x), torch.zeros(maxlen-len(x))]) for x in extended]
-        os.makedirs(paths.gen_path(), exist_ok=True)
+        os.makedirs(paths.gen_dir(), exist_ok=True)
         # out = self.forward_generate(torch.stack(speakers + list(reversed(speakers)), dim=0).cuda(), torch.stack(aligned + aligned, dim=0).cuda(), verbose=verbose, use_half=use_half)
         out = self.forward_generate(torch.stack(vc_speakers, dim=0).cuda(),
                                     torch.stack(aligned, dim=0).cuda(), verbose=verbose, use_half=use_half)
         # for i, x in enumerate(gt) :
-        #     librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_target.wav', x.cpu().numpy(), sr=sample_rate)
+        #     librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_target.wav', x.cpu().numpy(), sr=sample_rate)
         #     audio = out[i][:len(x)].cpu().numpy()
-        #     librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
+        #     librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
         #     audio_tr = out[n_points+i][:len(x)].cpu().numpy()
-        #     librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_transferred.wav', audio_tr, sr=sample_rate)
+        #     librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_transferred.wav', audio_tr, sr=sample_rate)
 
         for i, x in enumerate(gt):
-            # librosa.output.write_wav(f'{paths.gen_path()}/gsb_{i+1:04d}.wav', x.cpu().numpy(), sr=sample_rate)
-            # librosa.output.write_wav(f'{paths.gen_path()}/gt_gsb_{i+1:03d}.wav', x.cpu().numpy(), sr=sample_rate)
+            # librosa.output.write_wav(f'{paths.gen_dir()}/gsb_{i+1:04d}.wav', x.cpu().numpy(), sr=sample_rate)
+            # librosa.output.write_wav(f'{paths.gen_dir()}/gt_gsb_{i+1:03d}.wav', x.cpu().numpy(), sr=sample_rate)
             # audio = out[i][:len(x)].cpu().numpy()
-            # librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
+            # librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
             # audio_tr = out[n_points+i][:len(x)].cpu().numpy()
             audio_tr = out[i][:self.pad_left_encoder() + len(x)].cpu().numpy()
-            # librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_transferred.wav', audio_tr, sr=sample_rate)
-            librosa.output.write_wav(f'{paths.gen_path()}/gsb_{i + 1:04d}.wav', audio_tr, sr=sample_rate)
+            # librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_transferred.wav', audio_tr, sr=sample_rate)
+            librosa.output.write_wav(f'{paths.gen_dir()}/gsb_{i + 1:04d}.wav', audio_tr, sr=sample_rate)

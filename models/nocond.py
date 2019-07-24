@@ -128,7 +128,7 @@ class Model(nn.Module) :
     def do_generate(self, paths, step, data_path, test_index, deterministic=False, use_half=False, verbose=False):
         out = self.generate(len(test_index), 100000)
         k = step // 1000
-        os.makedirs(paths.gen_path(), exist_ok=True)
+        os.makedirs(paths.gen_dir(), exist_ok=True)
         for i in range(len(test_index)) :
             audio = out[i].cpu().numpy()
-            librosa.output.write_wav(f'{paths.gen_path()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)
+            librosa.output.write_wav(f'{paths.gen_dir()}/{k}k_steps_{i}_generated.wav', audio, sr=sample_rate)

@@ -134,7 +134,7 @@ else:
     print('num_group={}'.format(args.num_group))
     print('count={}'.format(args.count))
     print('num_sample={}'.format(args.num_sample))
-    writer = SummaryWriter(f"{paths.logfile_path()}/tensorboard")
+    writer = SummaryWriter(paths.logfile_dir())
     writer.add_scalars('Params/Train', {'beta': args.beta})
     writer.add_scalars('Params/Train', {'num_group': args.num_group})
     writer.add_scalars('Params/Train', {'num_sample': args.num_sample})

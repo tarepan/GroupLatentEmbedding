@@ -37,10 +37,10 @@ class Paths:
     def step_path(self):
         return f'{self.checkpoint_dir}/{self.name}_step.npy'
 
-    def gen_path(self):
+    def gen_dir(self):
         return self.output_dir
 
-    def logfile_path(self):
+    def logfile_dir(self):
         return self.log_dir
 
 # @deprecated
