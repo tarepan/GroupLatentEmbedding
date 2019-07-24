@@ -43,11 +43,6 @@ class Paths:
     def logfile_dir(self):
         return self.log_dir
 
-# @deprecated
-# Not used. Argments of Paths are changed, so below won't work. 
-def default_paths(name, data_dir):
-    return Paths(name, data_dir, checkpoint_dir="model_checkpoints", output_dir="model_outputs")
-
 class AudiobookDataset(Dataset):
     def __init__(self, ids, path):
         self.path = path
