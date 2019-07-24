@@ -276,15 +276,10 @@ class Model(nn.Module) :
                            paths.model_hist_path(step))
                 self.do_test(writer, e, step, dataset.path, valid_index)
                 self.do_test_generate(paths, step, dataset.path, valid_index)
-            # if k > saved_k + 50:
-            #     torch.save({'epoch': e,
-            #                 'state_dict': self.state_dict(),
-            #                 'optimiser': optimiser.state_dict(),
-            #                 'step': step},
-            #                paths.model_hist_path(step))
-            #     # torch.save(self.state_dict(), paths.model_hist_path(step))
-            #     saved_k = k
-            #     self.do_generate(paths, step, dataset.path, valid_index)
+
+            # finish an epoch
+
+        print("finish training.")
 
     def do_test(self, writer, epoch, step, data_path, test_index):
         dataset = env.MultispeakerDataset(test_index, data_path)
