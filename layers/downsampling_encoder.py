@@ -2,7 +2,6 @@ import torch.nn as nn
 import torch
 import torch.nn.functional as F
 import math
-import utils.logger as logger
 
 class DownsamplingEncoder(nn.Module):
     """
@@ -33,7 +32,6 @@ class DownsamplingEncoder(nn.Module):
             prev_channels = channels
             skip = (ksz - stride) * dilation_factor
             pad_left += total_scale * skip
-            logger.log(f'pad += {total_scale} * {ksz-stride} * {dilation_factor}')
             self.skips.append(skip)
             total_scale *= stride
         self.pad_left = pad_left
@@ -48,23 +46,17 @@ class DownsamplingEncoder(nn.Module):
 
     def forward(self, samples):
         x = samples.unsqueeze(1)
-        #logger.log(f'sd[samples] {x.std()}')
         for i, stuff in enumerate(zip(self.convs_wide, self.convs_1x1, self.layer_specs, self.skips)):
             conv_wide, conv_1x1, layer_spec, skip = stuff
             stride, ksz, dilation_factor = layer_spec
 
             x1 = conv_wide(x)
-            #logger.log(f'sd[conv.s] {x1.std()}')
             x1_a, x1_b = x1.split(x1.size(1) // 2, dim=1)
             x2 = torch.tanh(x1_a) * torch.sigmoid(x1_b)
-            #logger.log(f'sd[act] {x2.std()}')
             x3 = conv_1x1(x2)
-            #logger.log(f'sd[conv.1] {x3.std()}')
             if i == 0:
                 x = x3
             else:
                 x = x3 + x[:, :, skip:skip+x3.size(2)*stride].view(x.size(0), x3.size(1), x3.size(2), -1)[:, :, :, -1]
-            #logger.log(f'sd[out] {x.std()}')
         x = self.final_conv_1(F.relu(self.final_conv_0(x)))
-        #logger.log(f'sd[final] {x.std()}')
         return x.transpose(1, 2)

@@ -12,7 +12,6 @@ import time
 from layers.wavernn import WaveRNN
 from layers.upsample import UpsampleNetwork
 import utils.env as env
-import utils.logger as logger
 
 class Model(nn.Module) :
     def __init__(self, rnn_dims, fc_dims, pad, upsample_factors, feat_dims):
@@ -23,9 +22,7 @@ class Model(nn.Module) :
         self.num_params()
 
     def forward(self, x, mels) :
-        #logger.log(f'x: {x.size()} mels: {mels.size()}')
         cond = self.upsample(mels)
-        #logger.log(f'cond: {cond.size()}')
         return self.wavernn(x, cond.transpose(1, 2), None, None, None)
 
     def after_update(self):
@@ -48,7 +45,6 @@ class Model(nn.Module) :
     def num_params(self) :
         parameters = filter(lambda p: p.requires_grad, self.parameters())
         parameters = sum([np.prod(p.size()) for p in parameters]) / 1_000_000
-        logger.log('Trainable Parameters: %.3f million' % parameters)
 
     def load_state_dict(self, dict):
         return super().load_state_dict(upgrade_state_dict(dict))
@@ -106,13 +102,10 @@ class Model(nn.Module) :
 
                 step += 1
                 k = step // 1000
-                logger.status(f'Epoch: {e+1}/{epochs} -- Batch: {i+1}/{iters} -- Loss: c={avg_loss_c:#.4} f={avg_loss_f:#.4} -- Speed: {speed:#.4} steps/sec -- Step: {k}k ')
 
             os.makedirs(paths.checkpoint_dir, exist_ok=True)
             torch.save(self.state_dict(), paths.model_path())
             np.save(paths.step_path(), step)
-            logger.log_current_status()
-            logger.log(f' <saved>; w[0][0] = {self.wavernn.gru.weight_ih_l0[0][0]}')
             if k > saved_k + 50:
                 torch.save(self.state_dict(), paths.model_hist_path(step))
                 saved_k = k

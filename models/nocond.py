@@ -14,7 +14,6 @@ from layers.upsample import UpsampleNetwork
 from layers.vector_quant import VectorQuant
 from layers.downsampling_encoder import DownsamplingEncoder
 import utils.env as env
-import utils.logger as logger
 
 class Model(nn.Module) :
     def __init__(self, rnn_dims, fc_dims):
@@ -117,18 +116,14 @@ class Model(nn.Module) :
 
                 step += 1
                 k = step // 1000
-                logger.status(f'Epoch: {e+1}/{epochs} -- Batch: {i+1}/{iters} -- Loss: c={avg_loss_c:#.4} f={avg_loss_f:#.4} -- Grad: {max_grad:#.1} {max_grad_name} Speed: {speed:#.4} steps/sec -- Step: {k}k ')
 
             os.makedirs(paths.checkpoint_dir, exist_ok=True)
             torch.save(self.state_dict(), paths.model_path())
             np.save(paths.step_path(), step)
-            logger.log_current_status()
-            logger.log(f' <saved>; w[0][0] = {self.overtone.wavernn.gru.weight_ih_l0[0][0]}')
             if k > saved_k + 50:
                 torch.save(self.state_dict(), paths.model_hist_path(step))
                 saved_k = k
                 self.do_generate(paths, step, dataset.path, valid_index)
-                logger.log('done generation')
 
     def do_generate(self, paths, step, data_path, test_index, deterministic=False, use_half=False, verbose=False):
         out = self.generate(len(test_index), 100000)

@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import time
-import utils.logger as logger
 
 def filter_none(xs):
     return [x for x in xs if x is not None]
@@ -36,11 +35,9 @@ class WaveRNN(nn.Module) :
 
         o_c = F.relu(self.fc1(torch.cat(filter_none([h_c, aux2]), dim=2)))
         p_c = F.log_softmax(self.fc2(o_c), dim=2)
-        #logger.log(f'o_c: {o_c.var()} p_c: {p_c.var()}')
 
         o_f = F.relu(self.fc3(torch.cat(filter_none([h_f, aux3]), dim=2)))
         p_f = F.log_softmax(self.fc4(o_f), dim=2)
-        #logger.log(f'o_f: {o_f.var()} p_f: {p_f.var()}')
 
         return p_c, p_f, h_n.squeeze(0)
 
@@ -113,12 +110,7 @@ class WaveRNN(nn.Module) :
             c_val = c_val_new
 
             sample = (c_cat * 256 + f_cat) / 32767.5 - 1.0
-            if verbose and i % 10000 < 100:
-                logger.log(f'c={c_cat[0]} f={f_cat[0]} sample={sample[0]}')
             output.append(sample)
-            if i % 100 == 0 :
-                speed = int((i + 1) / (time.time() - start))
-                logger.status(f'{i+1}/{seq_len} -- Speed: {speed} samples/sec')
 
         return torch.stack(output, dim=1)
 
@@ -138,7 +130,6 @@ class WaveRNNCell(nn.Module):
         self.fc4 = fc4
 
     def forward_c(self, x, feat, aux1, aux2, h):
-        # logger.log(f'x: {x.size()}, feat: {feat.size()}, aux1: {aux1.size()}')
         h_0 = self.gru_cell(torch.cat(filter_none([feat, aux1, x]), dim=1), h)
         h_c, _ = torch.split(h_0, self.half_rnn_dims, dim=1)
         return self.fc2(F.relu(self.fc1(torch.cat(filter_none([h_c, aux2]), dim=1))))

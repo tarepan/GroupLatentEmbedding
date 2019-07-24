@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import numpy as np
-import utils.logger as logger
 
 class UpsampleNetwork(nn.Module) :
     """

@@ -15,7 +15,6 @@ import utils.env as env
 import argparse
 import platform
 import re
-import utils.logger as logger
 import time
 import subprocess
 from tensorboardX import SummaryWriter
@@ -128,14 +127,13 @@ else:
 if args.generate:
     model.do_generate(paths, step, data_path, test_index, use_half=use_half, verbose=True)#, deterministic=True)
 else:
-    logger.set_logfile(paths.logfile_path())
-    logger.log('------------------------------------------------------------')
-    logger.log('-- New training session starts here ------------------------')
-    logger.log(time.strftime('%c UTC', time.gmtime()))
-    logger.log('beta={}'.format(args.beta))
-    logger.log('num_group={}'.format(args.num_group))
-    logger.log('count={}'.format(args.count))
-    logger.log('num_sample={}'.format(args.num_sample))
+    print('------------------------------------------------------------')
+    print('-- New training session starts here ------------------------')
+    print(time.strftime('%c UTC', time.gmtime()))
+    print('beta={}'.format(args.beta))
+    print('num_group={}'.format(args.num_group))
+    print('count={}'.format(args.count))
+    print('num_sample={}'.format(args.num_sample))
     writer = SummaryWriter(f"{paths.logfile_path()}/tensorboard")
     writer.add_scalars('Params/Train', {'beta': args.beta})
     writer.add_scalars('Params/Train', {'num_group': args.num_group})
