@@ -1,13 +1,9 @@
-import math, pickle, os
+import os
 import numpy as np
 import torch
-from torch.autograd import Variable
-from torch import optim
 from torch.utils.data import DataLoader
 import torch.nn as nn
-import torch.nn.functional as F
 from utils.dsp import *
-import sys
 import time
 from layers.overtone import Overtone
 from layers.vector_quant import *

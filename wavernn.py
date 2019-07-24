@@ -1,11 +1,6 @@
-import math, pickle, os
-import numpy as np
+import pickle, os
 import torch
-from torch.autograd import Variable
 from torch import optim
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
 from utils import *
 import sys
 import models.nocond as nc
@@ -13,10 +8,8 @@ import models.vqvae as vqvae
 import models.wavernn1 as wr
 import utils.env as env
 import argparse
-import platform
 import re
 import time
-import subprocess
 from tensorboardX import SummaryWriter
 
 import config

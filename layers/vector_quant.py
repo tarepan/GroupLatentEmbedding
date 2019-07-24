@@ -2,7 +2,6 @@ import torch.nn as nn
 import torch
 import torch.nn.functional as F
 import math
-import numpy as np
 
 class VectorQuant(nn.Module):
     """
