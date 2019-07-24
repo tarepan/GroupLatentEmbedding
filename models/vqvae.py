@@ -10,7 +10,7 @@ from layers.vector_quant import *
 from layers.downsampling_encoder import DownsamplingEncoder
 import utils.env as env
 import random
-from tqdm.autonotebook import tqdm
+from tqdm import tqdm_notebook as tqdm
 
 __model_factory = {
     'vqvae': VectorQuant,
