@@ -10,7 +10,7 @@ from layers.vector_quant import *
 from layers.downsampling_encoder import DownsamplingEncoder
 import utils.env as env
 import random
-from tqdm import tqdm_notebook as tqdm
+from tqdm import tqdm
 
 __model_factory = {
     'vqvae': VectorQuant,
@@ -155,7 +155,7 @@ class Model(nn.Module) :
 
             iters = len(trn_loader)
 
-            for i, (speaker, wave16) in enumerate(tqdm(trn_loader, desc="steps", leave=False)):
+            for i, (speaker, wave16) in enumerate(trn_loader):
 
                 speaker = speaker.cuda()
                 wave16 = wave16.cuda()
