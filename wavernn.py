@@ -104,6 +104,7 @@ if args.scratch or args.load == None and not os.path.exists(paths.model_path()):
     # Start from scratch
     step = 0
     epoch = 0
+    print("Start from Scratch.")
 else:
     if args.load:
         prev_model_name = re.sub(r'_[0-9]+$', '', re.sub(r'\.pyt$', '', os.path.basename(args.load)))
@@ -117,6 +118,7 @@ else:
     else:
         prev_path = paths.model_path()
     step, epoch = env.restore(prev_path, model, optimiser)
+    print("Start from Checkpoint")
 
 #model.freeze_encoder()
 
@@ -126,7 +128,7 @@ if args.generate:
     model.do_generate(paths, step, data_path, test_index, use_half=use_half, verbose=True)#, deterministic=True)
 else:
     print('------------------------------------------------------------')
-    print('-- New training session starts here ------------------------')
+    print('-- Training session starts here ------------------------')
     print(time.strftime('%c UTC', time.gmtime()))
     print('beta={}'.format(args.beta))
     print('num_group={}'.format(args.num_group))
