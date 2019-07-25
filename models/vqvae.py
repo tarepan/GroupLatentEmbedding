@@ -49,13 +49,21 @@ class Model(nn.Module) :
         self.num_params()
 
     def forward(self, global_decoder_cond, x, samples):
+        """
+        Arguments:
+            global_decoder_cond -- speaker one-hot embedding
+        """
+        # Encoding
         # x: (N, 768, 3)
         # samples: (N, 1022)
         continuous = self.encoder(samples)
         # continuous: (N, 14, 64)
+
+        # Vector quantization (w/ or w/o Group latent embedding)
         discrete, vq_pen, encoder_pen, entropy = self.vq(continuous.unsqueeze(2))
         # discrete: (N, 14, 1, 64)
 
+        # Decoding
         # cond: (N, 768, 64)
         return self.overtone(x, discrete.squeeze(2), global_decoder_cond), vq_pen.mean(), encoder_pen.mean(), entropy
 
@@ -156,7 +164,9 @@ class Model(nn.Module) :
             iters = len(trn_loader)
 
             for i, (speaker, wave16) in enumerate(trn_loader):
-
+                # class MultispeakerDataset(Dataset):
+                # ...
+                # return ""speaker_onehot"", audio
                 speaker = speaker.cuda()
                 wave16 = wave16.cuda()
 
@@ -196,13 +206,19 @@ class Model(nn.Module) :
                     translated = torch.stack(translated, dim=0)
                 else:
                     translated = noisy_f[:, pad_left-pad_left_encoder:]
+
+                # forward calculation
+                ## def forward(self, global_decoder_cond, x, samples):
                 p_cf, vq_pen, encoder_pen, entropy = self(speaker, x, translated)
+
+                # loss calculation
                 p_c, p_f = p_cf
                 loss_c = criterion(p_c.transpose(1, 2).float(), y_coarse)
                 loss_f = criterion(p_f.transpose(1, 2).float(), y_fine)
                 encoder_weight = 0.01 * min(1, max(0.1, step / 1000 - 1))
                 loss = loss_c + loss_f + vq_pen + encoder_weight * encoder_pen
 
+                # back propagation 
                 optimiser.zero_grad()
                 if use_half:
                     optimiser.backward(loss)
@@ -233,7 +249,11 @@ class Model(nn.Module) :
                         if 100000 < max_grad:
                             torch.save(self.state_dict(), "bad_model.pyt")
                             raise RuntimeError("Aborting due to crazy gradient (model saved to bad_model.pyt)")
+
+                # optimization
                 optimiser.step()
+
+                # loss logging
                 running_loss_c += loss_c.item()
                 running_loss_f += loss_f.item()
                 running_loss_vq += vq_pen.item()

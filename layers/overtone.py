@@ -113,6 +113,10 @@ class Overtone(nn.Module):
         self.cond_pad = cond_delay // 64
 
     def forward(self, x, cond, global_cond):
+        """
+        Arguments:
+            global_cond -- speaker one-hot embedding
+        """
         n = x.size(0)
         x_coarse = x[:, :, :1]
         c0 = self.conv0(x_coarse, global_cond)

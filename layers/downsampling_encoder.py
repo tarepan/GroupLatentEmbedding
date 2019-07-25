@@ -18,15 +18,18 @@ class DownsamplingEncoder(nn.Module):
         total_scale = 1
         pad_left = 0
         self.skips = []
+        # Layer generation by loop
         for stride, ksz, dilation_factor in layer_specs:
             conv_wide = nn.Conv1d(prev_channels, 2 * channels, ksz, stride=stride, dilation=dilation_factor)
             wsize = 2.967 / math.sqrt(ksz * prev_channels)
             conv_wide.weight.data.uniform_(-wsize, wsize)
             conv_wide.bias.data.zero_()
+            # register
             self.convs_wide.append(conv_wide)
 
             conv_1x1 = nn.Conv1d(channels, channels, 1)
             conv_1x1.bias.data.zero_()
+            # register
             self.convs_1x1.append(conv_1x1)
 
             prev_channels = channels
