@@ -401,6 +401,8 @@ class Model(nn.Module) :
 
 
     def do_generate(self, paths, step, data_path, test_index, deterministic=False, use_half=False, verbose=False):
+        """Speech generation from command-line (not during test)
+        """
         k = step // 1000
         test_index = [x[:10] if len(x) > 0 else [] for i, x in enumerate(test_index)]
         test_index[0] = []

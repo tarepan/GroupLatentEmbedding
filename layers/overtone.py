@@ -36,7 +36,7 @@ class Conv2(nn.Module):
         return torch.sigmoid(a) * torch.tanh(b)
 
 class Conv4(nn.Module):
-    """ A convolution layer with the stride of 4.
+    """ A convolution layer with the stride of 4. (Conv2(Conv2))
 
         Input:
             x: (N, 4L+6, in_channels) numeric tensor
@@ -132,6 +132,9 @@ class Overtone(nn.Module):
         return p_c[:, self.warmup_steps:], p_f[:, self.warmup_steps:]
 
     def generate(self, cond, global_cond, n=None, seq_len=None, verbose=False, use_half=False):
+        """
+        usecase #1: called from vqvae model during test generation
+        """
         start = time.time()
         if n is None:
             n = cond.size(0)
@@ -180,6 +183,7 @@ class Overtone(nn.Module):
                 t1 = (t // 4) % 4
                 ct1 = ((-t) // 4) % 4
 
+                # Conv stride4
                 c0[:, -ct1-1].copy_(self.conv0(coarse, global_cond).squeeze(1))
                 coarse[:, :-4].copy_(coarse[:, 4:])
 
@@ -187,25 +191,33 @@ class Overtone(nn.Module):
                     t2 = (t // 16) % 4
                     ct2 = ((-t) // 16) % 4
 
+                    # Conv stride4
                     c1[:, -ct2-1].copy_(self.conv1(c0, global_cond).squeeze(1))
                     c0[:, :-4].copy_(c0[:, 4:])
 
                     if t2 == 0:
+                        # Conv stride4
                         c2 = self.conv2(c1, global_cond).squeeze(1)
                         c1[:, :-4].copy_(c1[:, 4:])
 
                         if cond is None:
                             inp0 = c2
                         else:
+                            # Time-slice of speech-conditioning??
                             inp0 = torch.cat([c2, cond[:, t // 64 + self.cond_pad]], dim=1)
+                        # RNN0 manually looped here (see autoregressive h0)
                         r0, h0 = cell0(inp0, global_cond, h0)
 
+                    # RNN1 manually looped here (see autoregressive h1)
                     r1, h1 = cell1(torch.cat([c1[:, -ct2-1], r0[:, t2]], dim=1), global_cond, h1)
 
+                # RNN2 manually looped here (see autoregressive h2)
                 r2, h2 = cell2(torch.cat([c0[:, -ct1-1], r1[:, t1]], dim=1), global_cond, h2)
 
+            # conditioning for WaveRNN
             wcond = torch.cat(filter_none([r2[:, t0], global_cond]), dim=1)
 
+            # WaveRNN w/ dual-softmax
             x = torch.stack([c_val, f_val, zero], dim=1)
             o_c = wcell.forward_c(x, wcond, None, None, h3)
             c_cat = utils.nn.sample_softmax(o_c).float()

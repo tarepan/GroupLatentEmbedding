@@ -11,10 +11,11 @@ If you can contact with authors and notify the bugs, I am happy.
 [i1]: https://github.com/tarepan/GroupLatentEmbedding/issues/1
 [i2]: https://github.com/tarepan/GroupLatentEmbedding/issues/2
 
-## Dataset:
 
+## Dataset:
 * [VCTK](https://datashare.is.ed.ac.uk/handle/10283/2651)
   <!-- * [Audio samples](https://shaojinding.github.io/samples/gle/gle_demo). -->
+
 
 ## Preparation
 ### Requirements
@@ -28,13 +29,11 @@ If you can contact with authors and notify the bugs, I am happy.
 
 
 ### Create config.py
-
 ```
 cp config.py.example config.py
 ```
 
 ### Preparing VCTK
-
 You can skip this section if you don't need a multi-speaker dataset.
 
 1. Download and uncompress [the VCTK dataset](
@@ -46,7 +45,6 @@ You can skip this section if you don't need a multi-speaker dataset.
 
 
 ## Usage
-
 To run Group Latent Embedding:
 
 ```
@@ -75,9 +73,26 @@ model, rather than training it.
 
 `--num-group` specifies the number of groups. `--num-sample` specifies the number of atoms in each group. Note that num-group times num-sample should be equal to the total number of atoms in the embedding dictionary (`n_classes` in class `VectorQuantGroup` in `vector_quant.py`)
 
-# Acknowledgement
 
+## Network Structure
+### VQVAE
+Encoder - VQ - Decoder  
+
+- Encoder:  
+- VQ: GLE | normal  
+- Decoder: Context_stack + DeepMind_WaveRNN  
+
+Context_stack: Conv_downsampling + RNN_tCNN_upsampling (from mkotha)  
+
+The idea of context stack was conceptually shown in WaveNet original paper.  
+### Vocoder + speech-noconditioning
+(not main topic of this repository)  
+DeepMind WaveRNN (No context_stack, which is used in VQVAE.)  
+
+
+## Acknowledgement
 The code is based on [mkotha/WaveRNN](https://github.com/mkotha/WaveRNN).
 
-# Cite the work
+
+## Cite the work
 S. Ding, and R. Gutierrez-Osuna. "Group Latent Embedding for Vector Quantized Variational Autoencoder in Non-Parallel Voice Conversion." Accepted by Interspeech 2019.
