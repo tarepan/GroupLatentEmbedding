@@ -11,6 +11,10 @@ If you can contact with authors and notify the bugs, I am happy.
 [i1]: https://github.com/tarepan/GroupLatentEmbedding/issues/1
 [i2]: https://github.com/tarepan/GroupLatentEmbedding/issues/2
 
+## What this repo can do
+**wav2wav VC**  
+(not spec2spec VC, amazing!)  
+
 
 ## Dataset:
 * [VCTK](https://datashare.is.ed.ac.uk/handle/10283/2651)
